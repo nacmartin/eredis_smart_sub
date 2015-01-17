@@ -1,0 +1,7 @@
+{application, eredis_smart_sub, [
+    {description, "Abstraction layer to share clients among subscribers in redis pubsub."},
+    {vsn, "0.1"},
+    {modules, [eredis_smart_sub]},
+    {registered, []},
+    {applications, [kernel, stdlib]}
+]}.
