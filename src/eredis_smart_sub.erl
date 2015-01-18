@@ -45,7 +45,7 @@ handle_info({message, Channel, Msg, Pid}, #state{subscriptions = Subscriptions} 
     eredis_sub:ack_message(Pid),
     case dict:find(Channel, Subscriptions) of
         error -> ok;
-        {ok, Subscribed} -> [ReplyTo ! {received_message, Msg} || ReplyTo <- Subscribed]
+        {ok, Subscribed} -> [ReplyTo ! {message, Msg} || ReplyTo <- Subscribed]
     end,
     {noreply, State};
 handle_info({'DOWN', _Ref, process, Pid, _}, State = #state{subscriptions = Subscriptions, subscribers = Subscribers}) ->
@@ -59,7 +59,6 @@ handle_info({'DOWN', _Ref, process, Pid, _}, State = #state{subscriptions = Subs
     {noreply, State#state{subscribers = NewSubscribers}};
 handle_info(_Info, State) ->
     {stop, {unhandled_message, _Info}, State}.
-
 handle_cast({subscribe, Channels, From}, #state{client = Client, subscriptions = Subscriptions, subscribers = Subscribers} = State) ->
     SubFun = fun(Channel, {Subs, Chans}) ->
                      case dict:find(Channel, Subs) of

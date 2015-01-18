@@ -66,7 +66,7 @@ test_subscribe(Client, SubClient) ->
     ?assertEqual(1, length(Subscribers)),
     eredis:q(Client, ["PUBLISH", <<"chan1">>, msg]),
     Message = receive
-                  {received_message, M} -> M
+                  {message, M} -> M
               after 1000 ->
                   throw(timeout)
               end,
@@ -76,7 +76,7 @@ test_unsubscribe(Client, SubClient) ->
     sub_channels(SubClient, [<<"chan1">>]),
     eredis:q(Client, ["PUBLISH", <<"chan1">>, msg]),
     Message = receive
-                  {received_message, M} -> M
+                  {message, M} -> M
               after 1000 ->
                   throw(timeout)
               end,
@@ -87,7 +87,7 @@ test_unsubscribe(Client, SubClient) ->
     eredis:q(Client, ["PUBLISH", <<"chan1">>, msg2]),
     F = fun() ->
               receive
-                  {received_message, _} -> ok
+                  {message, _} -> ok
               after 1000 ->
                   throw(timeout)
               end
