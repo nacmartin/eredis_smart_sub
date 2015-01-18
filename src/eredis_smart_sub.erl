@@ -33,12 +33,11 @@ init([Client]) ->
 handle_info(stop, State) ->
     {stop, shutdown, State};
 
-handle_info({subscribed, Channel, Pid}, #state{subscriptions = Subscriptions} = State) ->
+handle_info({subscribed, _Channel, Pid}, State) ->
     eredis_sub:ack_message(Pid),
-    case dict:find(Channel, Subscriptions) of
-        error -> ok;
-        {ok, Subscribed} -> [ReplyTo ! {subscribed, Channel} || ReplyTo <- Subscribed]
-    end,
+    {noreply, State};
+handle_info({unsubscribed, _Channel, Pid}, State) ->
+    eredis_sub:ack_message(Pid),
     {noreply, State};
 handle_info({message, Channel, Msg, Pid}, #state{subscriptions = Subscriptions} = State) ->
     eredis_sub:ack_message(Pid),
@@ -55,23 +54,23 @@ handle_cast({subscribe, Channels, From}, #state{client = Client, subscriptions =
     SubFun = fun(Channel, {Subs, Chans}) ->
                      case dict:find(Channel, Subs) of
                          error -> {dict:append(Channel, From, Subs), [Channel | Chans]};
-                         _ -> {dict:append(Channel, From, Subs), [Channel | Chans]}
+                         _ -> {dict:append(Channel, From, Subs), Chans}
                      end
              end,
     {NewSubscriptions, NewChannels} = lists:foldl(SubFun, {Subscriptions, []}, Channels),
     eredis_sub:subscribe(Client, NewChannels),
-    {noreply, State#state{subscriptions = NewSubscriptions}}.
+    {noreply, State#state{subscriptions = NewSubscriptions}};
 
-%handle_cast({unsubscribe, Channels, From}, #state{subscriptions = Subscriptions} = State) ->
-%    SubFun = fun(Channel, {Subs, Chans}) ->
-%                     case dict:find(Channel, Subs) of
-%                         error -> {dict:append(Channel, From, Subs), [Channel | Chans]};
-%                         _ -> {dict:append(Channel, From, Subs), [Channel | Chans]}
-%                     end
-%             end,
-%    {NewSubscriptions, NewChannels} = lists:foldl(SubFun, {Subscriptions, []}, Channels),
-%    eredis_sub:subscribe(Client, RemovedChannels),
-%    {noreply, State#state{subscriptions = NewSubscriptions}}.
+handle_cast({unsubscribe, Channels, From}, #state{client = Client, subscriptions = Subscriptions} = State) ->
+    SubFun = fun(Channel, {Subs, Chans}) ->
+                     case dict:find(Channel, Subs) of
+                         error -> {Subs, Chans};
+                         {ok, Subscribed} -> {dict:store(Channel, lists:delete(From, Subscribed), Subs), [Channel | Chans]}
+                     end
+             end,
+    {NewSubscriptions, RemovedChannels} = lists:foldl(SubFun, {Subscriptions, []}, Channels),
+    eredis_sub:unsubscribe(Client, RemovedChannels),
+    {noreply, State#state{subscriptions = NewSubscriptions}}.
 
 handle_call(stop, _From, State) ->
     {stop, normal, ok, State};
