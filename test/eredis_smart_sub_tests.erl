@@ -62,6 +62,8 @@ start_and_test_running(Client) ->
 
 test_subscribe(Client, SubClient) ->
     sub_channels(SubClient, [<<"chan1">>]),
+    {ok, Subscribers} =gen_server:call(SubClient, {subscribers, <<"chan1">>}),
+    ?assertEqual(1, length(Subscribers)),
     eredis:q(Client, ["PUBLISH", <<"chan1">>, msg]),
     Message = receive
                   {received_message, M} -> M
@@ -80,6 +82,8 @@ test_unsubscribe(Client, SubClient) ->
               end,
     ?assertEqual(<<"msg">>, Message),
     unsub_channels(SubClient, [<<"chan1">>]),
+    {ok, Subscribers} =gen_server:call(SubClient, {subscribers, <<"chan1">>}),
+    ?assertEqual(0, length(Subscribers)),
     eredis:q(Client, ["PUBLISH", <<"chan1">>, msg2]),
     F = fun() ->
               receive
