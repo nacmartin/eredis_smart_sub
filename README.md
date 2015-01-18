@@ -1,6 +1,6 @@
 # eredis_smart_sub
 
-**eredis_smart_pub** is a layer on top of [eredis](https://github.com/wooga/eredis) to multiplex pub connections among several subscriptor processes in pubsub context
+**eredis_smart_sub** is a layer on top of [eredis](https://github.com/wooga/eredis) to multiplex sub connections among several subscriptor processes in pubsub context
 
 eredis, a more low-level approach to redis pubsub, requires a process to be the controller of every subscription done in a connection. However, if you have multiple processes that want to subscribe to different channels, you are faced with a decision:
 
@@ -11,7 +11,7 @@ eredis, a more low-level approach to redis pubsub, requires a process to be the 
   * Opening a connection for every Erlang process does not feel very clean, does it?
 - Write a layer on top of eredis with a process that will receive all the messages and send them back to the processes that are listening to the corresponding channels.
 
-eredis_pub_sub implements this second approach, providing that layer.
+eredis_smart_sub implements this second approach, providing that layer.
 
 ## Installation
 
