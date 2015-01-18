@@ -1,17 +1,27 @@
 # eredis_smart_sub
 
-Layer on top of [eredis](https://github.com/wooga/eredis) to multiplex pub connections among several subscriptor processes in pubsub context
+**eredis_smart_pub** is a layer on top of [eredis](https://github.com/wooga/eredis) to multiplex pub connections among several subscriptor processes in pubsub context
 
-eredis, a more low-level approach to redis pubsub, requires a process to be the controller of every subscription done in a connection. However, if you have multiple processes that want to subscribe to different channels, you are faced with a decission:
+eredis, a more low-level approach to redis pubsub, requires a process to be the controller of every subscription done in a connection. However, if you have multiple processes that want to subscribe to different channels, you are faced with a decision:
 
-1 Open a redis connection for each project that wants to subscribe to channels. However, this can cause you to open several connections to redis. There are some issues here: 
+- Open a redis connection for each project that wants to subscribe to channels. However, this can cause you to have to open several connections to redis. There are some issues here: 
   * While cheap, redis connections are not free.
   * A linux machine is capped to 65535 ports.
-  * This kind of problems are not the type one likes to face in the middle of the night. Or having in your head.
-  * Opening a connection for every erlang process does not feel very clean, does it?
-2 Write a layer on top of eredis with a process that will receive all the messages and send them back to the processes that are listening to the corresponding channels.
+  * This kind of problem is not the type one likes to face in the middle of the night.
+  * Opening a connection for every Erlang process does not feel very clean, does it?
+- Write a layer on top of eredis with a process that will receive all the messages and send them back to the processes that are listening to the corresponding channels.
 
 eredis_pub_sub implements this second approach, providing that layer.
+
+## Installation
+
+With [rebar](https://github.com/basho/rebar):
+
+Add this line to your deps in `rebar.config`:
+
+```
+ {eredis, ".*", {git, "git://github.com/wooga/eredis.git", {tag, "v0.1"}}}
+```
 
 ## Usage
 
@@ -52,4 +62,18 @@ gen_server:cast(SubClient, {unsubscribe, [<<"channel1">>], self()}),
 ### Handling of death of subscriptor processes
 If the subscriber process dies `eredis_smart_sub` will send UNSUSCRIBE messages to redis for the channels where the process was the only subscriber. It is a bit more expensive, though, than simply unsubscribing explicitely from the channels we were subscribed to before termination. Of course, one never knows when a process is going to die in a pool of blood, so `eredis_smart_sub` has this covered.
 
- 
+## To build
+
+- Get [rebar](https://github.com/basho/rebar).
+
+```
+rebar get-deps
+rebar compile
+```
+
+## To run tests
+
+```
+rebar compile eunit skip_deps=true
+```
+
