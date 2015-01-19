@@ -68,7 +68,10 @@ handle_cast({subscribe, Channels, From}, #state{client = Client, subscriptions =
              end,
 
     {NewSubscriptions, NewChannels} = lists:foldl(SubFun, {Subscriptions, []}, Channels),
-    eredis_sub:subscribe(Client, NewChannels),
+    if NewChannels =:= [] -> ok;
+       true -> eredis_sub:subscribe(Client, NewChannels)
+    end,
+    io:format("LETS SUBSCRIBE TO~p", [NewChannels]),
 
     NewSubscribers = case gb_sets:is_element(From, Subscribers) of
                          true -> Subscribers;
@@ -85,7 +88,9 @@ handle_cast({unsubscribe, Channels, From}, #state{client = Client, subscriptions
                      end
              end,
     {NewSubscriptions, RemovedChannels} = lists:foldl(SubFun, {Subscriptions, []}, Channels),
-    eredis_sub:unsubscribe(Client, RemovedChannels),
+    if Channels =:= [] -> ok;
+       true -> eredis_sub:unsubscribe(Client, RemovedChannels)
+    end,
     {noreply, State#state{subscriptions = NewSubscriptions}}.
 
 handle_call({subscribers, Channel}, _From, #state{subscriptions = Subscriptions} = State) ->
