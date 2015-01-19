@@ -4,7 +4,7 @@
 
 eredis, a more low-level approach to redis pubsub, requires a process to be the controller of every subscription done in a connection. However, if you have multiple processes that want to subscribe to different channels, you are faced with a decision:
 
-- Open a redis connection for each project that wants to subscribe to channels. However, this can cause you to have to open several connections to redis. There are some issues here: 
+- Open a Redis connection for each process that wants to subscribe to channels. However, this can cause you to have to open several connections to Eedis. There are some issues here: 
   * While cheap, redis connections are not free.
   * A linux machine is capped to 65535 ports.
   * This kind of problem is not the type one likes to face in the middle of the night.
