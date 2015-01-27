@@ -20,7 +20,7 @@ With [rebar](https://github.com/basho/rebar):
 Add this line to your deps in `rebar.config`:
 
 ```
- {eredis, ".*", {git, "git://github.com/wooga/eredis.git", {tag, "v0.1"}}}
+ {eredis, ".*", {git, "git://github.com/wooga/eredis.git", {tag, "v0.2"}}}
 ```
 
 ## Usage
