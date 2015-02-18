@@ -3,7 +3,6 @@
 
 %% API
 -export([start_link/1, stop/1]).
--include_lib("eunit/include/eunit.hrl").
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
