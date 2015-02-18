@@ -1,7 +1,7 @@
 PROJECT = eredis_smart_sub
 
 DEPS = eredis
-dep_eredis = git git://github.com/wooga/eredis.git v1.0.6
+dep_eredis = git git://github.com/wooga/eredis.git master
 
 .PHONY: release clean-release
 
