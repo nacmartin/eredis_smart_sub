@@ -70,7 +70,6 @@ handle_cast({subscribe, Channels, From}, #state{client = Client, subscriptions =
     if NewChannels =:= [] -> ok;
        true -> eredis_sub:subscribe(Client, NewChannels)
     end,
-    io:format("LETS SUBSCRIBE TO~p", [NewChannels]),
 
     NewSubscribers = case gb_sets:is_element(From, Subscribers) of
                          true -> Subscribers;
