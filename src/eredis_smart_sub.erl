@@ -56,8 +56,19 @@ handle_info({'DOWN', _Ref, process, Pid, _}, State = #state{subscriptions = Subs
     Channels = channels_with_only_subscriber(Pid, Subscriptions),
     gen_server:cast(?MODULE, {unsubscribe, Channels, Pid}),
     {noreply, State#state{subscribers = NewSubscribers}};
+
+handle_info({dropped, _Num, _Pid}, State) ->
+    {noreply, State};
+
+handle_info({eredis_disconnected, _Pid}, State) ->
+    {noreply, State};
+
+handle_info({eredis_connected, _Pid}, State) ->
+    {noreply, State};
+
 handle_info(_Info, State) ->
     {stop, {unhandled_message, _Info}, State}.
+
 handle_cast({subscribe, Channels, From}, #state{client = Client, subscriptions = Subscriptions, subscribers = Subscribers} = State) ->
     SubFun = fun(Channel, {Subs, Chans}) ->
                      case dict:find(Channel, Subs) of
